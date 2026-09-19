@@ -1,0 +1,40 @@
+# Voxa: LiveKit (медиасервер) + приложение + Caddy (HTTPS).
+# Всё в host-сети: LiveKit нужен широкий диапазон UDP-портов, так быстрее и проще.
+services:
+  livekit:
+    image: livekit/livekit-server:latest
+    command: --config /etc/livekit.yaml
+    network_mode: host
+    restart: unless-stopped
+    volumes:
+      - ./livekit.yaml:/etc/livekit.yaml:ro
+
+  app:
+    build: .
+    network_mode: host
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      HOST: 127.0.0.1
+      PORT: 3000
+      LIVEKIT_INTERNAL_URL: http://127.0.0.1:7880
+    volumes:
+      - ./data:/data
+    depends_on:
+      - livekit
+
+  caddy:
+    image: caddy:2
+    network_mode: host
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - app
+
+volumes:
+  caddy_data:
+  caddy_config:

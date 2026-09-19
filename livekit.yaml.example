@@ -1,0 +1,24 @@
+# Конфиг медиасервера LiveKit. install.sh создаёт livekit.yaml из этого шаблона.
+port: 7880
+rtc:
+  tcp_port: 7881            # запасной канал по TCP, если UDP режут
+  port_range_start: 50000   # UDP-порты для медиапотоков
+  port_range_end: 60000
+  use_external_ip: true     # определить публичный IP сервера
+keys:
+  __KEY__: __SECRET__
+webhook:
+  api_key: __KEY__
+  urls:
+    - http://127.0.0.1:3000/api/livekit/webhook
+room:
+  empty_timeout: 60
+  departure_timeout: 20
+logging:
+  level: info
+# Встроенный TURN (помогает при очень строгих сетях, напр. корпоративных).
+# Раскомментируйте и откройте 3478/udp:
+# turn:
+#   enabled: true
+#   domain: __DOMAIN__
+#   udp_port: 3478

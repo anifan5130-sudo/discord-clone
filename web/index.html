@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#1e1f22" />
+    <title>Voxa</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <!-- Вход -->
+    <div id="login" class="login" hidden>
+      <form id="login-form" class="login-card" autocomplete="off">
+        <div class="login-logo">
+          <img src="/favicon.svg" alt="" width="56" height="56" />
+        </div>
+        <h1 id="login-title">Добро пожаловать!</h1>
+        <p class="muted">Как тебя называть?</p>
+        <label class="field">
+          <span>Ник</span>
+          <input id="login-name" name="name" maxlength="32" required minlength="2" autofocus />
+        </label>
+        <label class="field" id="login-pass-field">
+          <span>Пароль сервера</span>
+          <input id="login-pass" name="password" type="password" />
+        </label>
+        <p class="error" id="login-error"></p>
+        <button class="btn btn-primary btn-block" type="submit">Войти</button>
+      </form>
+    </div>
+
+    <!-- Приложение -->
+    <div id="app" class="app" hidden>
+      <aside class="sidebar">
+        <header class="server-header">
+          <span id="server-name">Voxa</span>
+          <span class="online-dot" id="conn-dot" title="Связь с сервером"></span>
+        </header>
+        <div class="section-head">
+          <span>Комнаты</span>
+          <button class="icon-btn small" id="add-room" title="Создать комнату" data-icon="plus"></button>
+        </div>
+        <nav id="room-list" class="room-list"></nav>
+
+        <div id="voice-panel" class="voice-panel" hidden>
+          <div class="voice-panel-info">
+            <div class="voice-state" id="voice-state"><span data-icon="signal"></span><b>Голос подключён</b></div>
+            <button class="link" id="voice-room-name"></button>
+          </div>
+          <div class="voice-panel-actions">
+            <button class="icon-btn" id="vp-camera" title="Камера" data-icon="camera"></button>
+            <button class="icon-btn" id="vp-screen" title="Демонстрация экрана" data-icon="screen"></button>
+            <button class="icon-btn danger" id="vp-leave" title="Отключиться" data-icon="hangup"></button>
+          </div>
+        </div>
+
+        <div class="user-panel">
+          <div class="avatar sm" id="me-avatar"></div>
+          <div class="user-panel-name">
+            <b id="me-name"></b>
+            <small id="me-status">В сети</small>
+          </div>
+          <button class="icon-btn" id="btn-mute" title="Выключить микрофон" data-icon="mic"></button>
+          <button class="icon-btn" id="btn-deafen" title="Выключить звук" data-icon="headphones"></button>
+          <button class="icon-btn" id="btn-settings" title="Настройки" data-icon="gear"></button>
+        </div>
+      </aside>
+
+      <main class="content">
+        <header class="room-header">
+          <span class="room-header-icon" data-icon="speaker"></span>
+          <h2 id="room-title">—</h2>
+          <span class="room-topic" id="room-topic"></span>
+          <div class="spacer"></div>
+          <button class="icon-btn" id="btn-room-settings" title="Настройки комнаты" data-icon="edit" hidden></button>
+          <button class="icon-btn" id="btn-toggle-chat" title="Чат" data-icon="chat"></button>
+        </header>
+
+        <div class="room-body" id="room-body">
+          <section class="stage" id="stage">
+            <div class="stage-idle" id="stage-idle">
+              <div class="idle-avatars" id="idle-avatars"></div>
+              <h3 id="idle-title">В комнате пока никого</h3>
+              <p class="muted" id="idle-sub">Заходи — остальные подтянутся</p>
+              <button class="btn btn-green" id="btn-join">Присоединиться</button>
+            </div>
+            <div class="grid" id="grid" hidden></div>
+            <div class="stage-controls" id="stage-controls" hidden>
+              <button class="round-btn" id="sc-mute" title="Микрофон" data-icon="mic"></button>
+              <button class="round-btn" id="sc-camera" title="Камера" data-icon="cameraOff"></button>
+              <div class="split-btn">
+                <button class="round-btn" id="sc-screen" title="Демонстрация экрана" data-icon="screen"></button>
+                <select id="sc-screen-quality" title="Качество демонстрации"></select>
+              </div>
+              <button class="round-btn" id="sc-deafen" title="Звук" data-icon="headphones"></button>
+              <button class="round-btn danger" id="sc-leave" title="Отключиться" data-icon="hangup"></button>
+            </div>
+            <button class="btn btn-primary playback-btn" id="btn-playback" hidden>Нажми, чтобы включить звук</button>
+          </section>
+
+          <section class="chat" id="chat">
+            <div class="messages" id="messages"></div>
+            <form class="composer" id="composer">
+              <textarea id="composer-input" rows="1" maxlength="2000" placeholder="Написать сообщение"></textarea>
+              <button class="icon-btn" type="submit" title="Отправить" data-icon="send"></button>
+            </form>
+          </section>
+        </div>
+      </main>
+
+      <aside class="members" id="members">
+        <div class="section-head"><span id="members-title">В сети</span></div>
+        <div id="member-list"></div>
+      </aside>
+    </div>
+
+    <!-- Модальные окна -->
+    <div class="modal-backdrop" id="modal-room" hidden>
+      <form class="modal" id="room-form" autocomplete="off">
+        <h3 id="room-form-title">Создать комнату</h3>
+        <label class="field"><span>Название</span><input name="name" maxlength="40" required /></label>
+        <label class="field"><span>Тема (необязательно)</span><input name="topic" maxlength="120" /></label>
+        <label class="field">
+          <span>Пароль (пусто — открытая)</span>
+          <input name="password" type="password" autocomplete="new-password" />
+        </label>
+        <label class="field">
+          <span>Лимит участников (0 — без лимита)</span>
+          <input name="userLimit" type="number" min="0" max="99" value="0" />
+        </label>
+        <p class="error" id="room-form-error"></p>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-danger-ghost" id="room-delete" hidden>Удалить комнату</button>
+          <div class="spacer"></div>
+          <button type="button" class="btn btn-ghost" data-close>Отмена</button>
+          <button type="submit" class="btn btn-primary" id="room-form-submit">Создать</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="modal-backdrop" id="modal-password" hidden>
+      <form class="modal small" id="password-form">
+        <h3>Комната защищена паролем</h3>
+        <label class="field"><span>Пароль</span><input name="password" type="password" required /></label>
+        <p class="error" id="password-error"></p>
+        <div class="modal-actions">
+          <div class="spacer"></div>
+          <button type="button" class="btn btn-ghost" data-close>Отмена</button>
+          <button type="submit" class="btn btn-primary">Войти</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="modal-backdrop" id="modal-settings" hidden>
+      <div class="modal settings">
+        <nav class="settings-nav">
+          <button class="active" data-tab="voice">Голос и звук</button>
+          <button data-tab="video">Видео и экран</button>
+          <button data-tab="profile">Профиль</button>
+          <div class="spacer"></div>
+          <button class="danger" id="btn-logout">Выйти</button>
+        </nav>
+        <div class="settings-body">
+          <button class="icon-btn close-x" data-close data-icon="x"></button>
+
+          <section data-pane="voice">
+            <h3>Голос и звук</h3>
+            <div class="row2">
+              <label class="field"><span>Микрофон</span><select id="set-input"></select></label>
+              <label class="field"><span>Устройство вывода</span><select id="set-output"></select></label>
+            </div>
+            <label class="field">
+              <span>Громкость микрофона <b id="set-input-vol-val"></b></span>
+              <input type="range" id="set-input-vol" min="0" max="2" step="0.05" />
+            </label>
+
+            <div class="field">
+              <span>Проверка микрофона</span>
+              <div class="mic-test">
+                <div class="meter" id="meter"><div class="meter-fill" id="meter-fill"></div><div class="meter-mark" id="meter-mark"></div></div>
+                <button class="btn btn-ghost" id="btn-mic-test">Послушать себя</button>
+              </div>
+            </div>
+
+            <h4>Шумоподавление</h4>
+            <div class="radio-cards" id="set-noise">
+              <label><input type="radio" name="noise" value="rnnoise" /><b>Нейросетевое (RNNoise)</b><small>Убирает клавиатуру, вентилятор, шум улицы. Рекомендуется.</small></label>
+              <label><input type="radio" name="noise" value="browser" /><b>Стандартное</b><small>Встроенный шумодав браузера — мягче и легче для слабых ПК.</small></label>
+              <label><input type="radio" name="noise" value="off" /><b>Выключено</b><small>Чистый сигнал — для студийных микрофонов и музыки.</small></label>
+            </div>
+            <p class="muted small" id="noise-active"></p>
+
+            <label class="switch"><input type="checkbox" id="set-ec" /><span>Эхоподавление (нужно, если без наушников)</span></label>
+            <label class="switch"><input type="checkbox" id="set-agc" /><span>Автоматическая регулировка усиления</span></label>
+
+            <h4>Чувствительность ввода</h4>
+            <label class="switch"><input type="checkbox" id="set-gate" /><span>Передавать голос только выше порога</span></label>
+            <label class="field">
+              <span>Порог <b id="set-gate-val"></b></span>
+              <input type="range" id="set-gate-threshold" min="-90" max="-10" step="1" />
+            </label>
+
+            <h4>Режим ввода</h4>
+            <label class="switch"><input type="checkbox" id="set-ptt" /><span>Рация (push-to-talk)</span></label>
+            <div class="row2" id="ptt-opts">
+              <div class="field"><span>Клавиша</span><button class="btn btn-ghost" id="set-ptt-key"></button></div>
+              <label class="field"><span>Задержка отпускания <b id="set-ptt-delay-val"></b></span><input type="range" id="set-ptt-delay" min="0" max="1000" step="20" /></label>
+            </div>
+            <p class="muted small">Рация работает, пока окно Voxa в фокусе — так устроены браузеры.</p>
+
+            <h4>Качество</h4>
+            <label class="field">
+              <span>Битрейт голоса</span>
+              <select id="set-bitrate">
+                <option value="48000">48 кбит/с — экономно</option>
+                <option value="64000">64 кбит/с — как Discord</option>
+                <option value="96000">96 кбит/с — высокое</option>
+                <option value="128000">128 кбит/с — максимальное (Nitro-уровень)</option>
+                <option value="192000">192 кбит/с — студийное</option>
+              </select>
+            </label>
+            <label class="switch"><input type="checkbox" id="set-sounds" /><span>Звуки интерфейса</span></label>
+          </section>
+
+          <section data-pane="video" hidden>
+            <h3>Видео и экран</h3>
+            <label class="field"><span>Камера</span><select id="set-camera"></select></label>
+            <label class="field"><span>Качество камеры</span><select id="set-camera-quality"></select></label>
+            <label class="field"><span>Качество демонстрации экрана</span><select id="set-screen-quality"></select></label>
+            <p class="muted small">Для звука при демонстрации в Chrome/Edge отметь галочку «Поделиться звуком» в окне выбора экрана.</p>
+          </section>
+
+          <section data-pane="profile" hidden>
+            <h3>Профиль</h3>
+            <label class="field"><span>Ник</span><input id="set-name" maxlength="32" /></label>
+            <div class="field"><span>Цвет</span><div class="colors" id="set-colors"></div></div>
+            <p class="error" id="profile-error"></p>
+            <button class="btn btn-primary" id="btn-save-profile">Сохранить</button>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <div class="popover" id="popover" hidden></div>
+    <div class="toasts" id="toasts"></div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

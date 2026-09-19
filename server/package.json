@@ -1,0 +1,9 @@
+{
+  "name": "voxa-server",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Voxa: сервер комнат, чата и токенов LiveKit (без внешних зависимостей)",
+  "engines": { "node": ">=22.13" },
+  "scripts": { "start": "node --disable-warning=ExperimentalWarning index.js" }
+}
